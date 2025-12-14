@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const jsxPath = path.join(__dirname, 'textExplosionPluginTest.jsx');
+const jsxPath = path.join(__dirname, '..', 'src', 'plugins', 'textExplosionPlugin.jsx');
 const source = fs.readFileSync(jsxPath, 'utf8');
 
 try {
