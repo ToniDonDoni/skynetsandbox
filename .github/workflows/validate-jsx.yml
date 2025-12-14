@@ -2,9 +2,7 @@ name: Validate JSX Test Script
 
 on:
   pull_request:
-    branches: ["**"]
   push:
-    branches: ["**"]
 
 jobs:
   syntax-check:
