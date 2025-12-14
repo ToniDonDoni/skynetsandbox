@@ -2,6 +2,14 @@
  * Manual test script for the "Text Explosion" After Effects plugin.
  * Run inside After Effects' ExtendScript Toolkit or the AE scripting console.
  * Comments are in English as requested.
+ *
+ * How to run the manual test:
+ * 1) Ensure the Text Explosion plugin is installed and visible under Effects.
+ * 2) Open After Effects and create or open any project (an empty one is fine).
+ * 3) Go to File → Scripts → Run Script File... and select this JSX file,
+ *    or paste it into the ExtendScript Toolkit and run it with AE targeted.
+ * 4) The script creates temporary comps and alerts a PASS/FAIL summary.
+ * 5) If a test fails, read the alert text for the specific assertion message.
  */
 
 // Simple assertion helper for readability.
