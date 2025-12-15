@@ -105,6 +105,9 @@ def _band_energies(
     """Compute average magnitude per band for an audio file."""
 
     y, sr = librosa.load(audio_path, sr=sr, mono=True, duration=duration)
+    # Harmonic separation keeps the sustained, vocal-like content while
+    # discarding most percussive hits so the band measurements describe
+    # the vocal "vibe" instead of the drums.
     harmonic = librosa.effects.harmonic(y)
     stft = np.abs(librosa.stft(harmonic, n_fft=n_fft, hop_length=hop_length))
     freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
