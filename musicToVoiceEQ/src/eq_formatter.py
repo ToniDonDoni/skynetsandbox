@@ -15,7 +15,7 @@ class FrequencyBand:
     high_hz: float
 
 
-EqBand = tuple[str, int]
+BandGain = tuple[FrequencyBand, float]
 
 
 BAND_DEFINITIONS: Sequence[FrequencyBand] = (
@@ -32,50 +32,6 @@ BAND_DEFINITIONS: Sequence[FrequencyBand] = (
 )
 
 
-def _validate_bands(bands: Iterable[EqBand]) -> Sequence[EqBand]:
-    validated = []
-    for freq_range, level in bands:
-        if not 1 <= level <= 10:
-            raise ValueError(f"EQ level for {freq_range!r} must be between 1 and 10, got {level}.")
-        validated.append((freq_range, level))
-    return validated
-
-
-def format_eq_table(bands: Iterable[EqBand]) -> str:
-    """Format EQ band values as a two-column ASCII table."""
-
-    validated_bands = _validate_bands(bands)
-
-    freq_header = "Frequency (Hz)"
-    level_header = "EQ Level (1–10)"
-
-    freq_width = max(len(freq_header), *(len(freq) for freq, _ in validated_bands))
-    level_width = max(len(level_header), *(len(str(level)) for _, level in validated_bands))
-
-    def border() -> str:
-        return f"+{'-' * (freq_width + 2)}+{'-' * (level_width + 2)}+"
-
-    header = (
-        border()
-        + "\n"
-        + f"| {freq_header.ljust(freq_width)} | {level_header.ljust(level_width)} |\n"
-        + border()
-    )
-
-    rows = [f"| {freq.ljust(freq_width)} | {str(level).ljust(level_width)} |" for freq, level in validated_bands]
-
-    return "\n".join([header, *rows, border()])
-
-
-def write_eq_table(bands: Iterable[EqBand], output_path: Path) -> Path:
-    """Write a formatted EQ table to the given output path."""
-
-    table = format_eq_table(bands)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(table + "\n", encoding="utf-8")
-    return output_path
-
-
 def _band_energy(magnitude: np.ndarray, freqs: np.ndarray, band: FrequencyBand) -> float:
     mask = (freqs >= band.low_hz) & (freqs < band.high_hz)
     if not np.any(mask):
@@ -83,18 +39,44 @@ def _band_energy(magnitude: np.ndarray, freqs: np.ndarray, band: FrequencyBand) 
     return float(np.mean(magnitude[mask]))
 
 
-def _scale_to_levels(energies: np.ndarray) -> np.ndarray:
+def _band_gains_db(energies: np.ndarray) -> np.ndarray:
+    """Return centered, rounded dB offsets derived from band energies."""
+
     eps = 1e-9
     db_values = librosa.amplitude_to_db(energies + eps, ref=np.max(energies) + eps)
 
-    min_db = float(np.min(db_values))
-    max_db = float(np.max(db_values))
+    if np.ptp(db_values) < 1e-6:
+        return np.zeros_like(db_values)
 
-    if max_db - min_db < 1e-6:
-        return np.full_like(db_values, 5, dtype=int)
+    centered = db_values - float(np.mean(db_values))
+    clipped = np.clip(centered, -9.0, 9.0)
+    return np.rint(clipped)
 
-    scaled = np.interp(db_values, (min_db, max_db), (1.0, 10.0))
-    return np.rint(scaled).astype(int)
+
+def _format_freq_range(band: FrequencyBand) -> str:
+    if band.low_hz >= 1000 and band.high_hz >= 1000:
+        low = band.low_hz / 1000
+        high = band.high_hz / 1000
+        return f"{low:g}–{high:g} kHz"
+    return f"{band.low_hz:g}–{band.high_hz:g} Hz"
+
+
+def format_eq_adjustments(adjustments: Iterable[BandGain]) -> str:
+    """Format EQ suggestions as +/- dB lines with frequency ranges."""
+
+    lines = [
+        f"{gain:+.0f} dB @ {_format_freq_range(band)}" for band, gain in adjustments
+    ]
+    return "\n".join(lines)
+
+
+def write_eq_adjustments(adjustments: Iterable[BandGain], output_path: Path) -> Path:
+    """Write formatted EQ adjustments to the given output path."""
+
+    output = format_eq_adjustments(adjustments)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(output + "\n", encoding="utf-8")
+    return output_path
 
 
 def analyze_vocal_eq(
@@ -104,8 +86,8 @@ def analyze_vocal_eq(
     n_fft: int = 2048,
     hop_length: int = 512,
     duration: float | None = 90.0,
-) -> list[EqBand]:
-    """Analyze an audio file and suggest EQ levels for vocals."""
+) -> list[BandGain]:
+    """Analyze an audio file and suggest EQ gains for vocals."""
 
     y, sr = librosa.load(audio_path, sr=sr, mono=True, duration=duration)
 
@@ -114,9 +96,9 @@ def analyze_vocal_eq(
     freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
 
     energies = np.array([_band_energy(stft, freqs, band) for band in bands])
-    levels = _scale_to_levels(energies)
+    gains_db = _band_gains_db(energies)
 
-    return [(band.label, int(level)) for band, level in zip(bands, levels)]
+    return [(band, float(gain)) for band, gain in zip(bands, gains_db)]
 
 
 def main() -> None:
@@ -124,8 +106,8 @@ def main() -> None:
     output_file = Path("artifacts/eq_levels.txt")
 
     bands = analyze_vocal_eq(audio_file)
-    write_eq_table(bands, output_file)
-    print(f"Saved EQ table to {output_file}")
+    write_eq_adjustments(bands, output_file)
+    print(f"Saved EQ adjustments to {output_file}")
 
 
 if __name__ == "__main__":

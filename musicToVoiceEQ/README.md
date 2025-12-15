@@ -18,28 +18,16 @@ It provides a practical starting point for further manual adjustment based on th
 
 ## Output format
 
-The EQ suggestions are written as a two-column ASCII table where the first column
-contains the frequency range in Hz and the second column contains the EQ level
-from **1** (cut) to **10** (boost) for that range. Example:
+The EQ suggestions are now written as one line per band using decibel changes
+and a frequency range, e.g.:
 
 ```
-+----------------+-----------------+
-| Frequency (Hz) | EQ Level (1–10) |
-+----------------+-----------------+
-| 20–40          | 2               |
-| 40–80          | 3               |
-| 80–160         | 4               |
-| 160–320        | 5               |
-| 320–640        | 4               |
-| 640–1,250      | 5               |
-| 1,250–2,500    | 6               |
-| 2,500–5,000    | 7               |
-| 5,000–10,000   | 8               |
-| 10,000–20,000  | 9               |
-+----------------+-----------------+
+-3 dB @ 250–350 Hz
++2 dB @ 3–5 kHz
 ```
 
-The default script writes the table to `artifacts/eq_levels.txt`.
+Positive numbers indicate a boost, negative numbers a cut. The script saves
+these lines to `artifacts/eq_levels.txt`.
 
 ---
 
@@ -48,7 +36,7 @@ The default script writes the table to `artifacts/eq_levels.txt`.
 1. Load up to 90 seconds from `data/theweekend.mp3` (or another file if you change the path in `main`).
 2. Use harmonic-percussive separation (`librosa.effects.harmonic`) to emphasize steady, vocal-like components.
 3. Compute an STFT magnitude spectrogram and aggregate the average amplitude inside ten fixed vocal bands (20–20,000 Hz).
-4. Convert band amplitudes to decibels relative to the strongest band and scale the values into the **1–10** range so that louder vocal bands receive higher EQ levels.
+4. Convert band amplitudes to decibels relative to the strongest band, center them around the average band energy, and round to whole-number boosts/cuts in dB.
 
 ---
 
