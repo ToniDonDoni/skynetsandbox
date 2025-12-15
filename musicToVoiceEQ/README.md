@@ -37,7 +37,7 @@ into `artifacts/target_to_reference_eq.txt`.
 1. Load up to 90 seconds from the chosen reference and target files (update the paths in `main` to use other tracks).
 2. Use harmonic-percussive separation (`librosa.effects.harmonic`) to emphasize steady, vocal-like components.
 3. Compute an STFT magnitude spectrogram and aggregate the average amplitude inside ten fixed vocal bands (20–20,000 Hz).
-4. Convert band amplitudes to decibels relative to the strongest band, center them around the average band energy, and round to whole-number boosts/cuts in dB.
+4. Convert each band's amplitude to decibels relative to that file's average band energy (so different loudnesses across files do not skew the comparison), center them around the average band energy, and round to whole-number boosts/cuts in dB.
 5. Subtract the target's centered profile from the reference profile to see which bands need boosts or cuts to match the reference vocal presence.
 
 ### How the script focuses on the "vocal" part of the mix

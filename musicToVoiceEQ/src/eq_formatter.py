@@ -49,10 +49,16 @@ def _band_energy(magnitude: np.ndarray, freqs: np.ndarray, band: FrequencyBand) 
 
 
 def _band_profile_db(energies: np.ndarray) -> np.ndarray:
-    """Return centered band levels in dB without rounding."""
+    """Return centered band levels in dB without rounding.
+
+    The values are normalized per file by referencing each band's loudness to
+    that file's average band energy. This keeps the comparison focused on
+    relative spectral balance instead of absolute loudness differences between
+    two mixes.
+    """
 
     eps = 1e-9
-    db_values = librosa.amplitude_to_db(energies + eps, ref=np.max(energies) + eps)
+    db_values = librosa.amplitude_to_db(energies + eps, ref=np.mean(energies) + eps)
 
     if np.ptp(db_values) < 1e-6:
         return np.zeros_like(db_values)
