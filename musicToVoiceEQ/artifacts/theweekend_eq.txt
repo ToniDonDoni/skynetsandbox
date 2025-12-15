@@ -1,0 +1,13 @@
+Source: theweekend.mp3
+Sample rate: 44100 Hz
+Low cut: 60 Hz (HPF)
+Low-mid dip: 151 Hz (to reduce mud)
+Presence boost: 3144 Hz (clarity)
+Air boost: 9022 Hz (brightness)
+De-esser target: 4694 Hz
+Notes:
+- Apply gentle high-pass filtering below the low-cut point.
+- Tame the low-mid buildup if the vocal feels boxy.
+- Boost presence for intelligibility; adjust Q to taste.
+- Use a high-shelf for air; reduce if sibilance increases.
+- De-esser center frequency targets the harshest band.
