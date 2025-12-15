@@ -1,0 +1,16 @@
+{
+  "source": "theweekend.mp3",
+  "sample_rate": 44100,
+  "low_cut_hz": 60.0,
+  "low_mid_dip_hz": 150.732421875,
+  "presence_boost_hz": 3143.84765625,
+  "air_boost_hz": 9022.412109375,
+  "de_esser_hz": 4694.23828125,
+  "notes": [
+    "Apply gentle high-pass filtering below the low-cut point.",
+    "Tame the low-mid buildup if the vocal feels boxy.",
+    "Boost presence for intelligibility; adjust Q to taste.",
+    "Use a high-shelf for air; reduce if sibilance increases.",
+    "De-esser center frequency targets the harshest band."
+  ]
+}
