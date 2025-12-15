@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+"""Compute vocal-focused EQ suggestions as per-band dB boosts or cuts.
+
+The script estimates how loudly each vocal-related band speaks inside the mix
+by isolating the stable (harmonic) parts of the track and comparing their
+relative strength. Gains are centered so the output simply says "boost the
+bands that trail the average, trim the ones that dominate", producing a few
+decibel nudges to help the voice sit as it already does in the song.
+"""
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
