@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_PATH="$SCRIPT_DIR"
-UNITY_CMD="${UNITY_PATH:-unity-editor}"
+UNITY_CMD="${UNITY_PATH:-}"
 OUTPUT_PATH="${OUTPUT_PATH:-$PROJECT_PATH/Builds/Android/pupa.apk}"
 LOG_PATH="${LOG_PATH:-$PROJECT_PATH/unity_build.log}"
 
@@ -15,8 +15,13 @@ if [[ "${UNITY_MOCK_BUILD:-0}" == "1" ]]; then
   echo "UNITY_MOCK_BUILD=1 set; generating placeholder APK at $OUTPUT_PATH"
   printf "Mock APK generated on %s\n" "$(date -Is)" > "$OUTPUT_PATH"
 else
-  if ! command -v "$UNITY_CMD" >/dev/null 2>&1; then
-    echo "Unity CLI ($UNITY_CMD) not found. Install Unity 6000.3.2f1 with Android Build Support and set UNITY_PATH if needed." >&2
+  if [[ -z "$UNITY_CMD" ]]; then
+    echo "UNITY_PATH is not set. Please point UNITY_PATH to the Unity binary (e.g., /home/<user>/Unity/Hub/Editor/6000.3.2f1/Editor/Unity)." >&2
+    exit 1
+  fi
+
+  if [[ ! -x "$UNITY_CMD" ]]; then
+    echo "Unity CLI ($UNITY_CMD) not found or not executable. Install Unity 6000.3.2f1 with Android Build Support and set UNITY_PATH accordingly." >&2
     exit 1
   fi
 

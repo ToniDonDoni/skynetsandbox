@@ -1,21 +1,29 @@
 # Build Notes
 
 ## Current status
-- The Unity Editor is not installed in this container, so the project cannot be built here. Attempting to run the editor CLI fails (`unity-editor` is not found).
+- The Unity Editor is not installed in this container, so the project cannot be built here. A Unity-enabled host or CI runner is required to generate `pupa.apk`.
 - Android build support is required to produce `pupa.apk`.
 
 ## How to build `pupa.apk`
 1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime/tooling Unity depends on (GTK, OpenJDK, Xvfb, etc.) **and** to add the Unity Hub apt repository + install Unity Hub. When running in a restricted environment that already has Unity installed, you can skip the Unity Hub install by setting `UNITY_SKIP_UNITYHUB_INSTALL=1`.
 2. Use Unity Hub to install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK). For headless installs, you can run:
    ```bash
-   xvfb-run -a unityhub -- --headless install --version 6000.3.2f1
-   unity-editor --version
-   export UNITY_PATH="/home/<user>/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+   UNITY_VERSION="6000.3.2f1"
+   xvfb-run -a unityhub -- --headless install --version "${UNITY_VERSION}"
+
+   UNITY_PATH="$(find "$HOME" -type f \
+     -path "*/Hub/Editor/${UNITY_VERSION}/Editor/Unity*" \
+     -executable -print -quit)"
+
+   echo "Unity bin: $UNITY_PATH"
+   test -x "$UNITY_PATH"
+   "$UNITY_PATH" --version
    ```
    If Unity Hub cannot be used, a headless editor installer can be invoked directly when the CLI is available:
    ```bash
-   unity-editor -batchmode -nographics -quit -install --version 6000.3.2f1
-   unity-editor --version
+   UNITY_PATH="/path/to/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+   "$UNITY_PATH" -batchmode -nographics -quit -install --version 6000.3.2f1
+   "$UNITY_PATH" --version
    ```
 2. Open the project at `unity/first` in the Unity Hub/Editor to allow packages to restore.
 3. From the Editor: `File -> Build Settings`, select **Android**, ensure XR settings are configured as expected, and click **Build**. Choose an output path named `pupa.apk` (for example: `Builds/Android/pupa.apk`).
@@ -34,7 +42,7 @@
   ```bash
   #!/usr/bin/env bash
   set -euo pipefail
-  UNITY_PATH="/path/to/Unity/Editor/Unity"
+  UNITY_PATH="/path/to/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
   PROJECT_PATH="$(pwd)"
   OUTPUT_PATH="$PROJECT_PATH/Builds/Android/pupa.apk"
   mkdir -p "$(dirname "$OUTPUT_PATH")"

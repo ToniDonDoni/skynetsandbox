@@ -21,9 +21,19 @@ jobs:
 
       - name: Install Unity Editor 6000.3.2f1
         run: |
-          xvfb-run -a unityhub -- --headless install --version 6000.3.2f1
-          unity-editor --version
-          echo "UNITY_PATH=/home/runner/Unity/Hub/Editor/6000.3.2f1/Editor/Unity" >> "$GITHUB_ENV"
+          UNITY_VERSION="6000.3.2f1"
+          xvfb-run -a unityhub -- --headless install --version "${UNITY_VERSION}"
+
+          UNITY_BIN="$(find "$HOME" -type f \
+            -path "*/Hub/Editor/${UNITY_VERSION}/Editor/Unity*" \
+            -executable -print -quit)"
+
+          echo "Unity bin: $UNITY_BIN"
+          test -x "$UNITY_BIN" || { echo "Unity binary not found"; exit 1; }
+
+          "$UNITY_BIN" --version
+          echo "UNITY_PATH=$UNITY_BIN" >> "$GITHUB_ENV"
+          echo "$(dirname "$UNITY_BIN")" >> "$GITHUB_PATH"
 
       - name: Run build pipeline
         run: |
