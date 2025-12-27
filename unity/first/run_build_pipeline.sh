@@ -31,4 +31,12 @@ fi
 # Run the build and rely on the build script to fail if the APK is missing.
 "$BUILD_SCRIPT"
 
-echo "Build pipeline complete. APK located at: $APK_PATH"
+if [[ -f "$APK_PATH" ]]; then
+  apk_size_bytes=$(stat --format="%s" "$APK_PATH")
+  apk_size_human=$(du -h "$APK_PATH" | cut -f1)
+  echo "Build pipeline complete. APK located at: $APK_PATH"
+  echo "APK size: ${apk_size_human} (${apk_size_bytes} bytes)"
+else
+  echo "Build pipeline completed but APK was not found at $APK_PATH" >&2
+  exit 1
+fi

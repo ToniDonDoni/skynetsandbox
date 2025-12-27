@@ -26,4 +26,8 @@ if [[ ! -f "$OUTPUT_PATH" ]]; then
   exit 1
 fi
 
+apk_size_bytes=$(stat --format="%s" "$OUTPUT_PATH")
+apk_size_human=$(du -h "$OUTPUT_PATH" | cut -f1)
+
 echo "APK written to $OUTPUT_PATH"
+echo "APK size: ${apk_size_human} (${apk_size_bytes} bytes)"
