@@ -5,12 +5,17 @@
 - Android build support is required to produce `pupa.apk`.
 
 ## How to build `pupa.apk`
-1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime/tooling Unity depends on (GTK, OpenJDK, etc.) **and** to add the Unity Hub apt repository + install Unity Hub.
+1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime/tooling Unity depends on (GTK, OpenJDK, Xvfb, etc.) **and** to add the Unity Hub apt repository + install Unity Hub. When running in a restricted environment that already has Unity installed, you can skip the Unity Hub install by setting `UNITY_SKIP_UNITYHUB_INSTALL=1`.
 2. Use Unity Hub to install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK). For headless installs, you can run:
    ```bash
-   unityhub -- --headless install --version 6000.3.2f1
+   xvfb-run -a unityhub -- --headless install --version 6000.3.2f1
    unity-editor --version
    export UNITY_PATH="/home/<user>/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+   ```
+   If Unity Hub cannot be used, a headless editor installer can be invoked directly when the CLI is available:
+   ```bash
+   unity-editor -batchmode -nographics -quit -install --version 6000.3.2f1
+   unity-editor --version
    ```
 2. Open the project at `unity/first` in the Unity Hub/Editor to allow packages to restore.
 3. From the Editor: `File -> Build Settings`, select **Android**, ensure XR settings are configured as expected, and click **Build**. Choose an output path named `pupa.apk` (for example: `Builds/Android/pupa.apk`).
@@ -47,7 +52,7 @@
 
 ## CI build (GitHub Actions)
 - Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).
-- What it does: checks out the repo, installs the Linux runtime/tooling dependencies, and runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=0` (real build expected). The job verifies that `Builds/Android/pupa.apk` exists (printing its size) and uploads it; it fails if the APK is missing.
+- What it does: checks out the repo, installs the Linux runtime/tooling dependencies (including Xvfb), installs Unity 6000.3.2f1 headlessly via `xvfb-run` + Unity Hub, and runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=0` (real build expected). The job verifies that `Builds/Android/pupa.apk` exists (printing its size) and uploads it; it fails if the APK is missing.
 - Unity requirement: the runner must provide Unity **6000.3.2f1** with Android Build Support (or be configured with [GameCI](https://game.ci/) and a valid Unity license) so the pipeline can succeed without the mock flag.
 
 ## Troubleshooting

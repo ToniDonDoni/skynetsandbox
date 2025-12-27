@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Unity Editor 6000.3.2f1
         run: |
-          unityhub -- --headless install --version 6000.3.2f1
+          xvfb-run -a unityhub -- --headless install --version 6000.3.2f1
           unity-editor --version
           echo "UNITY_PATH=/home/runner/Unity/Hub/Editor/6000.3.2f1/Editor/Unity" >> "$GITHUB_ENV"
 
