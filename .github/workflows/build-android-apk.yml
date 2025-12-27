@@ -37,7 +37,7 @@ jobs:
 
       - name: Run build pipeline
         run: |
-          UNITY_MOCK_BUILD=${UNITY_MOCK_BUILD} ./unity/first/run_build_pipeline.sh
+          unity/first/build_android.sh
 
       - name: Verify APK exists and report size
         run: |
