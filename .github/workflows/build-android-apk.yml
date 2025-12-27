@@ -8,29 +8,25 @@ on:
     branches: [ main ]
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
+  scripted-android-build:
+    runs-on: ubuntu-24.04
     env:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_MOCK_BUILD: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build pupa.apk with Unity
-        uses: game-ci/unity-builder@v4
-        with:
-          projectPath: unity/first
-          unityVersion: 6000.3.2f1
-          targetPlatform: Android
-          buildName: pupa
-          buildPath: Builds/Android
-          customParameters: -customBuildPath Builds/Android/pupa.apk
+      - name: Install build dependencies
+        run: sudo ./unity/first/install_build_dependencies.sh
+
+      - name: Run build pipeline (mock build on CI)
+        run: |
+          UNITY_MOCK_BUILD=${UNITY_MOCK_BUILD} ./unity/first/run_build_pipeline.sh
 
       - name: Verify APK exists and report size
-        working-directory: unity/first
         run: |
-          test -f Builds/Android/pupa.apk
-          ls -lh Builds/Android/pupa.apk
+          test -f unity/first/Builds/Android/pupa.apk
+          ls -lh unity/first/Builds/Android/pupa.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

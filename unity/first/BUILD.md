@@ -42,8 +42,8 @@
 
 ## CI build (GitHub Actions)
 - Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).
-- Requirements: set `UNITY_LICENSE` in the repo secrets so GameCI can activate Unity 6000.3.2f1 with Android modules.
-- What it does: checks out the repo, runs `game-ci/unity-builder@v4` against `unity/first`, produces `Builds/Android/pupa.apk`, verifies the file exists/prints its size, and uploads the APK as an artifact. The job fails if the APK is missing.
+- What it does: checks out the repo, installs the Linux runtime/tooling dependencies, runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=1` to generate a placeholder `Builds/Android/pupa.apk`, verifies the artifact exists (printing its size), and uploads it. The job fails if the APK is missing.
+- Want a real Unity-produced APK in CI? Replace the pipeline step with a Unity-enabled runner or [GameCI](https://game.ci/) configuration and provide a Unity license plus Android modules.
 
 ## Troubleshooting
 - Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.
