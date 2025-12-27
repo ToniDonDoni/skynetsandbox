@@ -34,11 +34,16 @@
     -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
   echo "APK written to $OUTPUT_PATH"
   ```
- - Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
+- Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
 
 ## Quick test flow
 1. `./run_build_pipeline.sh` — installs prerequisites (with sudo if needed), runs the headless Android build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
 2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`; after completion, verify `Builds/Android/pupa.apk` exists and note its reported size.
+
+## CI build (GitHub Actions)
+- Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).
+- Requirements: set `UNITY_LICENSE` in the repo secrets so GameCI can activate Unity 6000.3.2f1 with Android modules.
+- What it does: checks out the repo, runs `game-ci/unity-builder@v4` against `unity/first`, produces `Builds/Android/pupa.apk`, verifies the file exists/prints its size, and uploads the APK as an artifact. The job fails if the APK is missing.
 
 ## Troubleshooting
 - Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.
