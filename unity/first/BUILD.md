@@ -1,0 +1,73 @@
+# Build Notes
+
+## Current status
+- The Unity Editor is not installed in this container, so the project cannot be built here. A Unity-enabled host or CI runner is required to generate `pupa.apk`.
+- Android build support is required to produce `pupa.apk`.
+
+## How to build `pupa.apk`
+1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime/tooling Unity depends on (GTK, OpenJDK, Xvfb, etc.) **and** to add the Unity Hub apt repository + install Unity Hub. When running in a restricted environment that already has Unity installed, you can skip the Unity Hub install by setting `UNITY_SKIP_UNITYHUB_INSTALL=1`.
+2. Use Unity Hub to install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK). For headless installs, you can run:
+   ```bash
+   UNITY_VERSION="6000.3.2f1"
+   xvfb-run -a unityhub -- --headless install --version "${UNITY_VERSION}"
+
+   UNITY_PATH="$(find "$HOME" -type f \
+     -path "*/Hub/Editor/${UNITY_VERSION}/Editor/Unity*" \
+     -executable -print -quit)"
+
+   echo "Unity bin: $UNITY_PATH"
+   test -x "$UNITY_PATH"
+   "$UNITY_PATH" --version
+   ```
+   If Unity Hub cannot be used, a headless editor installer can be invoked directly when the CLI is available:
+   ```bash
+   UNITY_PATH="/path/to/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+   "$UNITY_PATH" -batchmode -nographics -quit -install --version 6000.3.2f1
+   "$UNITY_PATH" --version
+   ```
+2. Open the project at `unity/first` in the Unity Hub/Editor to allow packages to restore.
+3. From the Editor: `File -> Build Settings`, select **Android**, ensure XR settings are configured as expected, and click **Build**. Choose an output path named `pupa.apk` (for example: `Builds/Android/pupa.apk`).
+4. For a headless build, use a machine with the matching Unity version and run a command similar to:
+   ```bash
+   /path/to/Unity/Editor/Unity -batchmode -projectPath /absolute/path/to/unity/first \
+     -buildTarget Android -executeMethod UnityEditor.BuildPipeline.BuildPlayer \
+     -logFile unity_build.log -quit -nographics \
+     -customBuildTarget Android -customBuildName pupa -customBuildPath /absolute/output/Builds/Android/pupa.apk
+   ```
+5. After a successful build, confirm that `Builds/Android/pupa.apk` exists and runs on the target headset/emulator, then commit only text assets (do not commit the generated `pupa.apk` or other binary artifacts).
+
+## Automated build helper
+- Before building, install runtime/tooling dependencies via `sudo ./install_build_dependencies.sh` on Debian/Ubuntu-based systems (or run the combined `./run_build_pipeline.sh`). The installer adds the Unity Hub apt repo and installs Unity Hub so you can fetch the required editor.
+- If you prefer a repeatable command, create (or run) a helper script such as `./build_android.sh` with contents similar to:
+  ```bash
+  #!/usr/bin/env bash
+  set -euo pipefail
+  UNITY_PATH="/path/to/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+  PROJECT_PATH="$(pwd)"
+  OUTPUT_PATH="$PROJECT_PATH/Builds/Android/pupa.apk"
+  mkdir -p "$(dirname "$OUTPUT_PATH")"
+  "$UNITY_PATH" -batchmode -nographics -projectPath "$PROJECT_PATH" \
+    -buildTarget Android -executeMethod UnityEditor.BuildPipeline.BuildPlayer \
+    -logFile "$PROJECT_PATH/unity_build.log" -quit \
+    -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
+  echo "APK written to $OUTPUT_PATH"
+  ```
+- Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
+
+## Quick test flow
+1. `UNITY_MOCK_BUILD=1 ./run_build_pipeline.sh` — in environments without Unity installed, this flag generates a placeholder APK so you can smoke-test the scripts. On a Unity-enabled host (or CI runner with Unity preinstalled), omit `UNITY_MOCK_BUILD` to produce the real binary. The pipeline installs prerequisites (with sudo if needed), runs the build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
+2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`; after completion, verify `Builds/Android/pupa.apk` exists and note its reported size. You can also add `UNITY_MOCK_BUILD=1` to the build command when Unity is unavailable to create a placeholder artifact for testing.
+
+## CI build (GitHub Actions)
+- Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).
+- What it does: checks out the repo, installs the Linux runtime/tooling dependencies (including Xvfb), installs Unity 6000.3.2f1 headlessly via `xvfb-run` + Unity Hub, and runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=0` (real build expected). The job verifies that `Builds/Android/pupa.apk` exists (printing its size) and uploads it; it fails if the APK is missing.
+- Unity requirement: the runner must provide Unity **6000.3.2f1** with Android Build Support (or be configured with [GameCI](https://game.ci/) and a valid Unity license) so the pipeline can succeed without the mock flag.
+
+## Troubleshooting
+- Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.
+- Ensure Android SDK/NDK paths are configured in `Edit -> Preferences -> External Tools` if the editor cannot locate them.
+- If using a CI runner, make sure the runner image includes the correct Unity + Android build modules or installs them before invoking the build.
+
+## Latest container attempt
+- Attempting to invoke the Unity CLI (`unity-editor -batchmode ...`) in this container fails because the editor is not installed, so no `pupa.apk` could be produced here. Run the build on a machine that has Unity 6000.3.2f1 with Android Build Support.
+- Because the APK is not produced in this environment, there is no file size to report. Once you build on a machine with Unity installed, the helper scripts will print the size (or you can run `stat -c "%n: %s bytes" Builds/Android/pupa.apk`).

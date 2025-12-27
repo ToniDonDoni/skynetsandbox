@@ -1,3 +1,18 @@
+# Unity project generated files and build outputs
+unity/first/Library/
+unity/first/Logs/
+unity/first/Temp/
+unity/first/Obj/
+unity/first/Build/
+unity/first/Builds/
+unity/first/MemoryCaptures/
+unity/first/UserSettings/
+unity/first/.vs/
+unity/first/.idea/
+unity/first/*.csproj
 unity/first/*.sln
 unity/first/*.apk
-unity/first/*.csproj
+unity/first/*.aab
+unity/first/*.unitypackage
+unity/first/[Aa]ssets/[Aa]ddresses*/**/catalog.json
+unity/first/unity_build.log
