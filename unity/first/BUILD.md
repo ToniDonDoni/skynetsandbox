@@ -37,8 +37,8 @@
 - Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
 
 ## Quick test flow
-1. `./run_build_pipeline.sh` — installs prerequisites (with sudo if needed), runs the headless Android build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
-2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`; after completion, verify `Builds/Android/pupa.apk` exists and note its reported size.
+1. `UNITY_MOCK_BUILD=1 ./run_build_pipeline.sh` — in environments without Unity installed, this flag generates a placeholder APK so you can smoke-test the scripts. On a Unity-enabled host, omit `UNITY_MOCK_BUILD` to produce the real binary. The pipeline installs prerequisites (with sudo if needed), runs the build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
+2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`; after completion, verify `Builds/Android/pupa.apk` exists and note its reported size. You can also add `UNITY_MOCK_BUILD=1` to the build command when Unity is unavailable to create a placeholder artifact for testing.
 
 ## CI build (GitHub Actions)
 - Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).

@@ -9,17 +9,22 @@ UNITY_CMD="${UNITY_PATH:-unity-editor}"
 OUTPUT_PATH="${OUTPUT_PATH:-$PROJECT_PATH/Builds/Android/pupa.apk}"
 LOG_PATH="${LOG_PATH:-$PROJECT_PATH/unity_build.log}"
 
-if ! command -v "$UNITY_CMD" >/dev/null 2>&1; then
-  echo "Unity CLI ($UNITY_CMD) not found. Install Unity 6000.3.2f1 with Android Build Support and set UNITY_PATH if needed." >&2
-  exit 1
-fi
-
 mkdir -p "$(dirname "$OUTPUT_PATH")"
 
-"$UNITY_CMD" -batchmode -nographics -projectPath "$PROJECT_PATH" \
-  -buildTarget Android -executeMethod UnityEditor.BuildPipeline.BuildPlayer \
-  -logFile "$LOG_PATH" -quit \
-  -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
+if [[ "${UNITY_MOCK_BUILD:-0}" == "1" ]]; then
+  echo "UNITY_MOCK_BUILD=1 set; generating placeholder APK at $OUTPUT_PATH"
+  printf "Mock APK generated on %s\n" "$(date -Is)" > "$OUTPUT_PATH"
+else
+  if ! command -v "$UNITY_CMD" >/dev/null 2>&1; then
+    echo "Unity CLI ($UNITY_CMD) not found. Install Unity 6000.3.2f1 with Android Build Support and set UNITY_PATH if needed." >&2
+    exit 1
+  fi
+
+  "$UNITY_CMD" -batchmode -nographics -projectPath "$PROJECT_PATH" \
+    -buildTarget Android -executeMethod UnityEditor.BuildPipeline.BuildPlayer \
+    -logFile "$LOG_PATH" -quit \
+    -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
+fi
 
 if [[ ! -f "$OUTPUT_PATH" ]]; then
   echo "Build completed but no APK was found at $OUTPUT_PATH" >&2

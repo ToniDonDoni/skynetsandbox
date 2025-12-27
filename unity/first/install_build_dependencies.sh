@@ -16,7 +16,7 @@ fi
 
 # Packages commonly required by the Unity Editor and Android builds on Linux.
 RUNTIME_PACKAGES=(
-  libgtk-3-0 libnss3 libasound2 libxrandr2 libxrender1 libxtst6 libxi6 libglu1-mesa
+  libgtk-3-0t64 libnss3 libasound2t64 libxrandr2 libxrender1 libxtst6 libxi6 libglu1-mesa
 )
 ANDROID_TOOLING=(
   openjdk-17-jdk unzip ca-certificates curl
