@@ -15,3 +15,4 @@ unity/first/*.apk
 unity/first/*.aab
 unity/first/*.unitypackage
 unity/first/[Aa]ssets/[Aa]ddresses*/**/catalog.json
+unity/first/unity_build.log
