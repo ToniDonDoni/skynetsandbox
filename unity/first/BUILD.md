@@ -47,3 +47,4 @@
 
 ## Latest container attempt
 - Attempting to invoke the Unity CLI (`unity-editor -batchmode ...`) in this container fails because the editor is not installed, so no `pupa.apk` could be produced here. Run the build on a machine that has Unity 6000.3.2f1 with Android Build Support.
+- Because the APK is not produced in this environment, there is no file size to report. Once you build on a machine with Unity installed, the helper scripts will print the size (or you can run `stat -c "%n: %s bytes" Builds/Android/pupa.apk`).
