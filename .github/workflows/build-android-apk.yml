@@ -11,7 +11,7 @@ jobs:
   scripted-android-build:
     runs-on: ubuntu-24.04
     env:
-      UNITY_MOCK_BUILD: 1
+      UNITY_MOCK_BUILD: 0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - name: Install build dependencies
         run: sudo ./unity/first/install_build_dependencies.sh
 
-      - name: Run build pipeline (mock build on CI)
+      - name: Run build pipeline
         run: |
           UNITY_MOCK_BUILD=${UNITY_MOCK_BUILD} ./unity/first/run_build_pipeline.sh
 

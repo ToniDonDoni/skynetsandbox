@@ -37,13 +37,13 @@
 - Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
 
 ## Quick test flow
-1. `UNITY_MOCK_BUILD=1 ./run_build_pipeline.sh` — in environments without Unity installed, this flag generates a placeholder APK so you can smoke-test the scripts. On a Unity-enabled host, omit `UNITY_MOCK_BUILD` to produce the real binary. The pipeline installs prerequisites (with sudo if needed), runs the build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
+1. `UNITY_MOCK_BUILD=1 ./run_build_pipeline.sh` — in environments without Unity installed, this flag generates a placeholder APK so you can smoke-test the scripts. On a Unity-enabled host (or CI runner with Unity preinstalled), omit `UNITY_MOCK_BUILD` to produce the real binary. The pipeline installs prerequisites (with sudo if needed), runs the build, confirms `Builds/Android/pupa.apk` exists, and prints the APK size.
 2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`; after completion, verify `Builds/Android/pupa.apk` exists and note its reported size. You can also add `UNITY_MOCK_BUILD=1` to the build command when Unity is unavailable to create a placeholder artifact for testing.
 
 ## CI build (GitHub Actions)
 - Workflow: `.github/workflows/build-android-apk.yml` (runs on pushes/PRs to `main` and manually via **Run workflow**).
-- What it does: checks out the repo, installs the Linux runtime/tooling dependencies, runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=1` to generate a placeholder `Builds/Android/pupa.apk`, verifies the artifact exists (printing its size), and uploads it. The job fails if the APK is missing.
-- Want a real Unity-produced APK in CI? Replace the pipeline step with a Unity-enabled runner or [GameCI](https://game.ci/) configuration and provide a Unity license plus Android modules.
+- What it does: checks out the repo, installs the Linux runtime/tooling dependencies, and runs `./run_build_pipeline.sh` with `UNITY_MOCK_BUILD=0` (real build expected). The job verifies that `Builds/Android/pupa.apk` exists (printing its size) and uploads it; it fails if the APK is missing.
+- Unity requirement: the runner must provide Unity **6000.3.2f1** with Android Build Support (or be configured with [GameCI](https://game.ci/) and a valid Unity license) so the pipeline can succeed without the mock flag.
 
 ## Troubleshooting
 - Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.
