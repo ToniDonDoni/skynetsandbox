@@ -6,7 +6,12 @@
 
 ## How to build `pupa.apk`
 1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime/tooling Unity depends on (GTK, OpenJDK, etc.) **and** to add the Unity Hub apt repository + install Unity Hub.
-2. Use Unity Hub to install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK).
+2. Use Unity Hub to install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK). For headless installs, you can run:
+   ```bash
+   unityhub -- --headless install --version 6000.3.2f1
+   unity-editor --version
+   export UNITY_PATH="/home/<user>/Unity/Hub/Editor/6000.3.2f1/Editor/Unity"
+   ```
 2. Open the project at `unity/first` in the Unity Hub/Editor to allow packages to restore.
 3. From the Editor: `File -> Build Settings`, select **Android**, ensure XR settings are configured as expected, and click **Build**. Choose an output path named `pupa.apk` (for example: `Builds/Android/pupa.apk`).
 4. For a headless build, use a machine with the matching Unity version and run a command similar to:
