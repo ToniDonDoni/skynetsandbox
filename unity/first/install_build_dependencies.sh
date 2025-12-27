@@ -31,16 +31,41 @@ if [[ "${UNITY_SKIP_UNITYHUB_INSTALL:-0}" == "1" ]]; then
   echo "UNITY_SKIP_UNITYHUB_INSTALL=1 set; skipping Unity Hub install."
 elif ! command -v unityhub >/dev/null 2>&1; then
   echo "Adding Unity Hub repository and installing unityhub..."
-  if ! curl -fsSL https://hub.unity3d.com/linux/keys/public | gpg --dearmor > /usr/share/keyrings/Unity_Technologies_ApS.gpg; then
-    echo "Failed to download Unity Hub signing key; check network access and try again." >&2
-    exit 1
+  UNITY_KEY_URL="https://hub.unity3d.com/linux/keys/public"
+  UNITY_KEYRING="/usr/share/keyrings/Unity_Technologies_ApS.gpg"
+  tmp_key="$(mktemp)"
+  trap 'rm -f "$tmp_key"' EXIT
+
+  download_key() {
+    local url="$1" dest="$2"
+    if curl -fL --retry 5 --retry-all-errors --connect-timeout 10 --max-time 60 \
+      -H "User-Agent: unity-key-fetcher" -o "$dest" "$url"; then
+      return 0
+    fi
+
+    if command -v wget >/dev/null 2>&1; then
+      wget -O "$dest" --retry-connrefused --waitretry=2 --tries=3 "$url"
+    else
+      return 1
+    fi
+  }
+
+  if ! download_key "$UNITY_KEY_URL" "$tmp_key"; then
+    echo "Warning: Failed to download Unity Hub signing key; skipping Unity Hub install." >&2
+  elif ! gpg --dearmor <"$tmp_key" > "$UNITY_KEYRING"; then
+    echo "Warning: Could not import Unity Hub signing key; skipping Unity Hub install." >&2
+  else
+    echo "deb [signed-by=$UNITY_KEYRING] https://hub.unity3d.com/linux/repos/deb stable main" \
+      | tee /etc/apt/sources.list.d/unityhub.list
+
+    if ! apt-get update; then
+      echo "Warning: Failed to update apt after adding Unity Hub repo; skipping Unity Hub install." >&2
+    else
+      if ! apt-get install -y unityhub; then
+        echo "Warning: Unity Hub install failed; continuing without it." >&2
+      fi
+    fi
   fi
-
-  echo "deb [signed-by=/usr/share/keyrings/Unity_Technologies_ApS.gpg] https://hub.unity3d.com/linux/repos/deb stable main" \
-    | tee /etc/apt/sources.list.d/unityhub.list
-
-  apt-get update
-  apt-get install -y unityhub
 else
   echo "Unity Hub already installed; skipping repository setup."
 fi
