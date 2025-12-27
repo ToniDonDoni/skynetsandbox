@@ -34,7 +34,12 @@
     -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
   echo "APK written to $OUTPUT_PATH"
   ```
-- Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
+ - Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
+
+## Quick test flow
+1. `sudo ./install_build_dependencies.sh` — installs the runtime/tooling prerequisites.
+2. `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh` — runs the headless Android build.
+3. Verify the APK exists at `Builds/Android/pupa.apk`; if not, investigate the build log (`unity_build.log`).
 
 ## Troubleshooting
 - Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.

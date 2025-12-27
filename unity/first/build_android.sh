@@ -21,4 +21,9 @@ mkdir -p "$(dirname "$OUTPUT_PATH")"
   -logFile "$LOG_PATH" -quit \
   -customBuildTarget Android -customBuildName pupa -customBuildPath "$OUTPUT_PATH"
 
+if [[ ! -f "$OUTPUT_PATH" ]]; then
+  echo "Build completed but no APK was found at $OUTPUT_PATH" >&2
+  exit 1
+fi
+
 echo "APK written to $OUTPUT_PATH"
