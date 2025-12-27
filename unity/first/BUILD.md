@@ -5,7 +5,8 @@
 - Android build support is required to produce `pupa.apk`.
 
 ## How to build `pupa.apk`
-1. Install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK).
+1. Run `sudo ./install_build_dependencies.sh` to install the Linux runtime and tooling Unity depends on (GTK, OpenJDK, etc.).
+2. Install Unity **6000.3.2f1** with the Android Build Support modules (SDK/NDK & OpenJDK).
 2. Open the project at `unity/first` in the Unity Hub/Editor to allow packages to restore.
 3. From the Editor: `File -> Build Settings`, select **Android**, ensure XR settings are configured as expected, and click **Build**. Choose an output path named `pupa.apk` (for example: `Builds/Android/pupa.apk`).
 4. For a headless build, use a machine with the matching Unity version and run a command similar to:
@@ -18,6 +19,7 @@
 5. After a successful build, confirm that `Builds/Android/pupa.apk` exists and runs on the target headset/emulator, then commit only text assets (do not commit the generated `pupa.apk` or other binary artifacts).
 
 ## Automated build helper
+- Before building, install runtime/tooling dependencies via `sudo ./install_build_dependencies.sh` on Debian/Ubuntu-based systems.
 - If you prefer a repeatable command, create (or run) a helper script such as `./build_android.sh` with contents similar to:
   ```bash
   #!/usr/bin/env bash
