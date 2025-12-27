@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Install system dependencies needed to run Unity headless Android builds.
 # This script installs runtime libraries and tooling that Unity depends on;
-# you must still install Unity 6000.3.2f1 with Android Build Support separately.
+# it also configures the Unity Hub apt repository and installs Unity Hub so you
+# can install Unity 6000.3.2f1 with Android Build Support afterward.
 set -euo pipefail
 
 if [[ $(id -u) -ne 0 ]]; then
@@ -25,10 +26,25 @@ ANDROID_TOOLING=(
 apt-get update
 apt-get install -y "${RUNTIME_PACKAGES[@]}" "${ANDROID_TOOLING[@]}"
 
+if ! command -v unityhub >/dev/null 2>&1; then
+  echo "Adding Unity Hub repository and installing unityhub..."
+  wget -qO - https://hub.unity3d.com/linux/keys/public | \
+    gpg --dearmor | \
+    tee /usr/share/keyrings/Unity_Technologies_ApS.gpg >/dev/null
+
+  echo "deb [signed-by=/usr/share/keyrings/Unity_Technologies_ApS.gpg] https://hub.unity3d.com/linux/repos/deb stable main" \
+    | tee /etc/apt/sources.list.d/unityhub.list
+
+  apt-get update
+  apt-get install -y unityhub
+else
+  echo "Unity Hub already installed; skipping repository setup."
+fi
+
 cat <<'MSG'
 System dependencies installed.
 Next steps:
-1) Install Unity 6000.3.2f1 with the Android Build Support modules (SDK/NDK + OpenJDK).
+1) Use Unity Hub to install Unity 6000.3.2f1 with the Android Build Support modules (SDK/NDK + OpenJDK).
 2) Export the Unity executable path via UNITY_PATH if it is not on PATH.
 3) Run ./build_android.sh to produce Builds/Android/pupa.apk.
 MSG
