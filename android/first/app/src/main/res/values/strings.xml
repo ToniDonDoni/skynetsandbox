@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">First Settings</string>
+    <string name="header_title">One-stop settings</string>
+    <string name="dark_mode_label">Enable dark mode</string>
+    <string name="notifications_label">Notifications</string>
+    <string name="sound_label">Sound level</string>
+    <string name="sync_label">Background sync</string>
+    <string name="status_template">Dark: %1$s • Notifications: %2$s • Sync: %3$s</string>
+    <string name="volume_description">Adjust the volume slider</string>
+    <string name="save_description">Toggle switches to see the summary update automatically.</string>
+</resources>
