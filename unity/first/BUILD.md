@@ -19,7 +19,7 @@
 5. After a successful build, confirm that `Builds/Android/pupa.apk` exists and runs on the target headset/emulator, then commit only text assets (do not commit the generated `pupa.apk` or other binary artifacts).
 
 ## Automated build helper
-- Before building, install runtime/tooling dependencies via `sudo ./install_build_dependencies.sh` on Debian/Ubuntu-based systems.
+- Before building, install runtime/tooling dependencies via `sudo ./install_build_dependencies.sh` on Debian/Ubuntu-based systems (or run the combined `./run_build_pipeline.sh`).
 - If you prefer a repeatable command, create (or run) a helper script such as `./build_android.sh` with contents similar to:
   ```bash
   #!/usr/bin/env bash
@@ -37,9 +37,8 @@
  - Ensure execute permission (`chmod +x build_android.sh`) and run the script from the `unity/first` directory once Unity + Android modules are installed.
 
 ## Quick test flow
-1. `sudo ./install_build_dependencies.sh` — installs the runtime/tooling prerequisites.
-2. `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh` — runs the headless Android build.
-3. Verify the APK exists at `Builds/Android/pupa.apk`; if not, investigate the build log (`unity_build.log`).
+1. `./run_build_pipeline.sh` — installs prerequisites (with sudo if needed), runs the headless Android build, and confirms the `Builds/Android/pupa.apk` output exists.
+2. If you prefer manual steps: `sudo ./install_build_dependencies.sh`, then `UNITY_PATH="/path/to/Unity/Editor/Unity" ./build_android.sh`, and finally ensure `Builds/Android/pupa.apk` is present.
 
 ## Troubleshooting
 - Verify the installed editor version matches `6000.3.2f1` as listed in `ProjectSettings/ProjectVersion.txt`.
