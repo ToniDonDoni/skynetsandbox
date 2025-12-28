@@ -25,8 +25,9 @@ jobs:
           fi
 
           echo "UNITY_LICENSE_XML_B64 is set (len=${#UNITY_LICENSE_XML_B64})"
-          # mkdir -p ~/.config/unity3d/Unity/licenses
+          mkdir -p ~/.config/unity3d/Unity/licenses
           # printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
+          printf '%s' "$UNITY_LICENSE_XML_B64" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
           # sudo apt-get update
           # sudo apt-get install -y libxml2-utils
           if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
