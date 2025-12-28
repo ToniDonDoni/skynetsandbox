@@ -110,8 +110,8 @@ install_unity_editor() {
 
   echo "Unity installed at $unity_bin"
   cat > /tmp/unity-path <<EOF
-UNITY_PATH="$unity_bin"
-UNITY_VERSION="$UNITY_INSTALL_VERSION"
+UNITY_PATH=$unity_bin
+UNITY_VERSION=$UNITY_INSTALL_VERSION
 EOF
   chmod 0644 /tmp/unity-path || true
 }

@@ -52,7 +52,7 @@ jobs:
           if [[ -f /tmp/unity-path ]]; then
             echo "Found /tmp/unity-path from dependency installer; exporting it."
             cat /tmp/unity-path >> "$GITHUB_ENV"
-            UNITY_BIN="$(grep '^UNITY_PATH=' /tmp/unity-path | cut -d'"' -f2)"
+            UNITY_BIN="$(grep '^UNITY_PATH=' /tmp/unity-path | cut -d= -f2-)"
           fi
 
           if [[ -z "$UNITY_BIN" ]]; then
