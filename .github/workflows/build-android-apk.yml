@@ -15,13 +15,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Unity License
+      - name: Check Unity License File
         run: |
           mkdir -p ~/.config/unity3d/Unity/licenses
           printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
-          # mkdir -p artifacts/unity-license
-          # cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml         
-     
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+          if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
+            echo "XML is valid"
+          else
+            echo "Invalid XML file. Please check the license file stored."
+            # mkdir -p artifacts/unity-license
+            # cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
+            exit 1
+          fi
+          
       # - name: Upload Unity license artifact
       #   if: always()
       #   uses: actions/upload-artifact@v4
@@ -30,16 +38,16 @@ jobs:
       #     path: artifacts/unity-license/UnityEntitlementLicense.xml
       #     if-no-files-found: error
 
-      - name: Validate Unity License
-        run: |         
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
-          if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
-            echo "XML is valid"
-          else
-            echo "Invalid XML file. Please check the license file."
-            exit 1
-          fi
+      # - name: Validate Unity License
+      #   run: |         
+      #     sudo apt-get update
+      #     sudo apt-get install -y libxml2-utils
+      #     if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
+      #       echo "XML is valid"
+      #     else
+      #       echo "Invalid XML file. Please check the license file."
+      #       exit 1
+      #     fi
 
       - name: Install build dependencies
         run: sudo ./unity/first/install_build_dependencies.sh
@@ -64,6 +72,8 @@ jobs:
       - name: Run build pipeline (tee log)
         run: |
           set -euo pipefail
+          mkdir -p ~/.config/unity3d/Unity/licenses
+          printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml       
           mkdir -p artifacts/unity-logs
           ./unity/first/build_android.sh 2>&1 | tee artifacts/unity-logs/build.log
 
