@@ -28,14 +28,15 @@ jobs:
           mkdir -p ~/.config/unity3d/Unity/licenses
           # printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
           printf '%s' "$UNITY_LICENSE_XML_B64" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
+          mkdir -p artifacts/unity-license
+          cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
           # sudo apt-get update
           # sudo apt-get install -y libxml2-utils
           if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
             echo "XML is valid"
           else
             echo "Invalid XML file. Please check the license file stored."
-            mkdir -p artifacts/unity-license
-            cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
+            
             exit 1
           fi
           
