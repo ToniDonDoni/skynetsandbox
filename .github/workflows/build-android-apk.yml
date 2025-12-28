@@ -25,26 +25,26 @@ jobs:
           fi
 
           echo "UNITY_LICENSE_XML_B64 is set (len=${#UNITY_LICENSE_XML_B64})"
-          mkdir -p ~/.config/unity3d/Unity/licenses
-          printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
+          # mkdir -p ~/.config/unity3d/Unity/licenses
+          # printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
+          # sudo apt-get update
+          # sudo apt-get install -y libxml2-utils
           if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
             echo "XML is valid"
           else
             echo "Invalid XML file. Please check the license file stored."
-            # mkdir -p artifacts/unity-license
-            # cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
+            mkdir -p artifacts/unity-license
+            cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
             exit 1
           fi
           
-      # - name: Upload Unity license artifact
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: unity-license
-      #     path: artifacts/unity-license/UnityEntitlementLicense.xml
-      #     if-no-files-found: error
+      - name: Upload Unity license artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-license
+          path: artifacts/unity-license/UnityEntitlementLicense.xml
+          if-no-files-found: error
 
       # - name: Validate Unity License
       #   run: |         
