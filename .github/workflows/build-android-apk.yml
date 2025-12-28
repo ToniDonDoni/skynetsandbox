@@ -19,7 +19,8 @@ jobs:
         run: |
           mkdir -p ~/.config/unity3d/Unity/licenses
           echo "${{ secrets.UNITY_LICENSE_XML }}" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
-          sudo apt-get install -y xmlstarlet
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
           if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
             echo "XML is valid"
           else
