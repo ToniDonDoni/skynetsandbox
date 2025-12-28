@@ -8,22 +8,31 @@ on:
 
 jobs:
   build-android:
-    # не даём secrets внешним PR из fork
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - name: Checkout PR commit
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           lfs: true
           fetch-depth: 0
 
-      - name: Cache Library
-        uses: actions/cache@v4
+      # освобождаем место ДО docker pull unityci/editor
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - uses: actions/cache@v4
         with:
           path: unity/first/Library
           key: Library-${{ runner.os }}-Android-${{ hashFiles('unity/first/Packages/manifest.json') }}
@@ -40,10 +49,10 @@ jobs:
         with:
           projectPath: unity/first
           targetPlatform: Android
-          buildPath: unity/first/build/Android
+          buildsPath: unity/first/build   # <-- вместо buildPath
+          buildName: Android              # будет unity/first/build/Android/Android.apk
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: Android
           path: unity/first/build/Android
