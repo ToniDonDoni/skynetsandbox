@@ -2,10 +2,11 @@
 name: Build Android APK (Unity)
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
   pull_request:
-    branches: [ main ]   # base branch (куда мержишь)
-    types: [opened, synchronize, reopened, ready_for_review]
-  workflow_dispatch: {}
+    branches: [ main ]
 
 jobs:
   build-android:
