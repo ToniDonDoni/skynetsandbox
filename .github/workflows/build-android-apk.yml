@@ -29,6 +29,7 @@ jobs:
           printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml || true
           mkdir -p artifacts/unity-license
           cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
+          printf '%s' "$UNITY_LICENSE_XML_B64" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml.b64
           sudo apt-get update
           sudo apt-get install -y libxml2-utils
           if xmllint --noout ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml; then
