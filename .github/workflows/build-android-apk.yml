@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Unity License
+        run: |
+          mkdir -p ~/.config/unity3d/Unity/licenses
+          echo "${{ secrets.UNITY_LICENSE_XML }}" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
+
+
       - name: Install build dependencies
         run: sudo ./unity/first/install_build_dependencies.sh
 
