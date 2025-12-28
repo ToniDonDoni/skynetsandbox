@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       UNITY_LICENSE_XML_B64: ${{ secrets.UNITY_LICENSE_XML_B64 }}
+      UNITY_INSTALL_VERSION: 6000.3.2f1
 
     steps:
       - name: Checkout
@@ -44,21 +45,27 @@ jobs:
       - name: Install build dependencies
         run: sudo ./unity/first/install_build_dependencies.sh
 
-      - name: Install Unity Editor 6000.3.2f1
+      - name: Export Unity path
         run: |
           set -euo pipefail
-          UNITY_VERSION="6000.3.2f1"
-          xvfb-run -a unityhub -- --headless install --version "${UNITY_VERSION}"
+          UNITY_BIN=""
+          if [[ -f /tmp/unity-path ]]; then
+            echo "Found /tmp/unity-path from dependency installer; exporting it."
+            cat /tmp/unity-path >> "$GITHUB_ENV"
+            UNITY_BIN="$(grep '^UNITY_PATH=' /tmp/unity-path | cut -d'"' -f2)"
+          fi
 
-          UNITY_BIN="$(find "$HOME" -type f \
-            -path "*/Hub/Editor/${UNITY_VERSION}/Editor/Unity*" \
-            -executable -print -quit)"
+          if [[ -z "$UNITY_BIN" ]]; then
+            UNITY_BIN="$(find "$HOME" -type f \
+              -path "*/Hub/Editor/${UNITY_INSTALL_VERSION}/Editor/Unity*" \
+              -executable -print -quit)"
+            echo "UNITY_PATH=$UNITY_BIN" >> "$GITHUB_ENV"
+          fi
 
           echo "Unity bin: $UNITY_BIN"
           test -x "$UNITY_BIN" || { echo "Unity binary not found"; exit 1; }
 
           "$UNITY_BIN" --version
-          echo "UNITY_PATH=$UNITY_BIN" >> "$GITHUB_ENV"
           echo "$(dirname "$UNITY_BIN")" >> "$GITHUB_PATH"
 
       - name: Run build pipeline (tee log)
