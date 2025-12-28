@@ -10,6 +10,8 @@ on:
 jobs:
   scripted-android-build:
     runs-on: ubuntu-24.04
+    env:
+      UNITY_LICENSE_XML_B64: ${{ secrets.UNITY_LICENSE_XML_B64 }}
 
     steps:
       - name: Checkout
