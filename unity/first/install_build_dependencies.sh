@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Install system dependencies needed to run Unity headless Android builds.
-# This script installs runtime libraries and tooling that Unity depends on;
-# it also configures the Unity Hub apt repository and installs Unity Hub so you
-# can install Unity 6000.3.2f1 with Android Build Support afterward.
+# Install system dependencies and (optionally) Unity Editor + Android support.
+# This installs runtime libraries and tooling Unity depends on, configures the
+# Unity Hub apt repository, installs Unity Hub, and installs the Unity Editor
+# version requested via UNITY_INSTALL_VERSION (default: 6000.3.2f1).
 set -euo pipefail
 
 if [[ $(id -u) -ne 0 ]]; then
@@ -23,6 +23,10 @@ RUNTIME_PACKAGES=(
 ANDROID_TOOLING=(
   openjdk-17-jdk unzip ca-certificates curl
 )
+UNITY_INSTALL_VERSION="${UNITY_INSTALL_VERSION:-6000.3.2f1}"
+UNITY_SKIP_EDITOR_INSTALL="${UNITY_SKIP_EDITOR_INSTALL:-0}"
+UNITY_INSTALL_USER="${SUDO_USER:-${USER:-root}}"
+UNITY_INSTALL_HOME="$(getent passwd "$UNITY_INSTALL_USER" 2>/dev/null | cut -d: -f6 || echo "$HOME")"
 
 apt-get update
 apt-get install -y "${RUNTIME_PACKAGES[@]}" "${ANDROID_TOOLING[@]}"
@@ -70,10 +74,55 @@ else
   echo "Unity Hub already installed; skipping repository setup."
 fi
 
-cat <<'MSG'
+unity_bin_path() {
+  local search_root="$1" version="$2"
+  find "$search_root" -type f -path "*/Hub/Editor/${version}/Editor/Unity*" -executable -print -quit
+}
+
+install_unity_editor() {
+  if [[ "$UNITY_SKIP_EDITOR_INSTALL" == "1" ]]; then
+    echo "UNITY_SKIP_EDITOR_INSTALL=1 set; skipping Unity Editor install."
+    return
+  fi
+
+  local existing_bin
+  existing_bin="$(unity_bin_path "$UNITY_INSTALL_HOME" "$UNITY_INSTALL_VERSION" || true)"
+  if [[ -n "$existing_bin" ]]; then
+    echo "Unity $UNITY_INSTALL_VERSION already present at $existing_bin; skipping install."
+    return
+  fi
+
+  echo "Installing Unity $UNITY_INSTALL_VERSION for user $UNITY_INSTALL_USER (HOME=$UNITY_INSTALL_HOME)..."
+
+  if [[ "$UNITY_INSTALL_USER" == "root" ]]; then
+    xvfb-run -a unityhub -- --headless install --version "$UNITY_INSTALL_VERSION"
+  else
+    sudo -u "$UNITY_INSTALL_USER" HOME="$UNITY_INSTALL_HOME" \
+      xvfb-run -a unityhub -- --headless install --version "$UNITY_INSTALL_VERSION"
+  fi
+
+  local unity_bin
+  unity_bin="$(unity_bin_path "$UNITY_INSTALL_HOME" "$UNITY_INSTALL_VERSION" || true)"
+  if [[ -z "$unity_bin" ]]; then
+    echo "Unity binary not found after install of $UNITY_INSTALL_VERSION" >&2
+    exit 1
+  fi
+
+  echo "Unity installed at $unity_bin"
+  cat > /tmp/unity-path <<EOF
+UNITY_PATH=$unity_bin
+UNITY_VERSION=$UNITY_INSTALL_VERSION
+EOF
+  chmod 0644 /tmp/unity-path || true
+}
+
+install_unity_editor
+
+cat <<MSG
 System dependencies (including Xvfb for headless installs) installed.
-Next steps:
-1) Use Unity Hub to install Unity 6000.3.2f1 with the Android Build Support modules (SDK/NDK + OpenJDK).
-2) Export the Unity executable path via UNITY_PATH if it is not on PATH.
-3) Run ./build_android.sh to produce Builds/Android/pupa.apk.
+Unity install target: $UNITY_INSTALL_VERSION
+Unity install user:   $UNITY_INSTALL_USER
+Unity home:           $UNITY_INSTALL_HOME
+If UNITY_SKIP_EDITOR_INSTALL=1, the editor install step was skipped.
+If /tmp/unity-path exists, it contains UNITY_PATH/UNITY_VERSION you can append to your env.
 MSG
