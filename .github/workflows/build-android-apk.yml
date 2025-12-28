@@ -2,20 +2,23 @@
 name: Build Android APK (Unity)
 
 on:
-  workflow_dispatch:
-  push:
+  pull_request_target:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   build-android:
+    # не даём secrets внешним PR из fork
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout PR commit
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           lfs: true
           fetch-depth: 0
 
@@ -44,4 +47,3 @@ jobs:
         with:
           name: Android
           path: unity/first/build/Android
-
