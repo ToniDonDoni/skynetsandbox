@@ -27,7 +27,6 @@ jobs:
           echo "UNITY_LICENSE_XML_B64 is set (len=${#UNITY_LICENSE_XML_B64})"
           mkdir -p ~/.config/unity3d/Unity/licenses
           printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml || true
-          #printf '%s' "$UNITY_LICENSE_XML_B64" > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
           mkdir -p artifacts/unity-license
           cp ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml artifacts/unity-license/UnityEntitlementLicense.xml            
           sudo apt-get update
@@ -40,13 +39,13 @@ jobs:
             exit 1
           fi
           
-      # - name: Upload Unity license artifact
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: unity-license
-      #     path: artifacts/unity-license/UnityEntitlementLicense.xml
-      #     if-no-files-found: error
+      - name: Upload Unity license artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-license
+          path: artifacts/unity-license/UnityEntitlementLicense.xml
+          if-no-files-found: error
 
       # - name: Validate Unity License
       #   run: |         
