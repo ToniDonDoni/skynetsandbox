@@ -17,6 +17,12 @@ jobs:
 
       - name: Check Unity License File
         run: |
+          if [[ -z "${UNITY_LICENSE_XML_B64:-}" ]]; then
+            echo "::error::UNITY_LICENSE_XML_B64 is missing/empty"
+            exit 1
+          fi
+
+          echo "UNITY_LICENSE_XML_B64 is set (len=${#UNITY_LICENSE_XML_B64})"
           mkdir -p ~/.config/unity3d/Unity/licenses
           printf '%s' "$UNITY_LICENSE_XML_B64" | base64 -d > ~/.config/unity3d/Unity/licenses/UnityEntitlementLicense.xml
           sudo apt-get update
