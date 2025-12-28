@@ -1,10 +1,11 @@
-# .github/workflows/unity-android.yml
-name: Unity Build (Android)
+# .github/workflows/build-android-apk.yml
+name: Build Android APK (Unity)
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request: {}
+  pull_request:
+    branches: [ main ]   # base branch (куда мержишь)
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch: {}
 
 jobs:
   build-android:
@@ -32,8 +33,6 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          # или для Pro:
-          # UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath: unity/first
           targetPlatform: Android
