@@ -10,8 +10,7 @@ on:
 jobs:
   scripted-android-build:
     runs-on: ubuntu-24.04
-    env:
-      UNITY_MOCK_BUILD: 0
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +20,7 @@ jobs:
 
       - name: Install Unity Editor 6000.3.2f1
         run: |
+          set -euo pipefail
           UNITY_VERSION="6000.3.2f1"
           xvfb-run -a unityhub -- --headless install --version "${UNITY_VERSION}"
 
@@ -35,16 +35,50 @@ jobs:
           echo "UNITY_PATH=$UNITY_BIN" >> "$GITHUB_ENV"
           echo "$(dirname "$UNITY_BIN")" >> "$GITHUB_PATH"
 
-      - name: Run build pipeline
+      - name: Run build pipeline (tee log)
         run: |
-          unity/first/build_android.sh
+          set -euo pipefail
+          mkdir -p artifacts/unity-logs
+          ./unity/first/build_android.sh 2>&1 | tee artifacts/unity-logs/build.log
+
+      - name: Collect Unity/Hub logs
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/unity-logs
+
+          # Unity Editor log (Linux)
+          cp -f "$HOME/.config/unity3d/Editor.log" \
+            artifacts/unity-logs/Editor.log 2>/dev/null || true
+
+          # Licensing log
+          cp -f "$HOME/.config/unity3d/Unity/Unity.Licensing.Client.log" \
+            artifacts/unity-logs/Unity.Licensing.Client.log 2>/dev/null || true
+
+          # Unity Hub logs (best effort)
+          if [ -d "$HOME/.config/UnityHub/logs" ]; then
+            cp -f "$HOME/.config/UnityHub/logs/"*.log artifacts/unity-logs/ 2>/dev/null || true
+          fi
+
+          echo "Collected:"
+          ls -la artifacts/unity-logs || true
+
+      - name: Upload logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-logs
+          path: artifacts/unity-logs
+          if-no-files-found: warn
 
       - name: Verify APK exists and report size
+        if: success()
         run: |
           test -f unity/first/Builds/Android/pupa.apk
           ls -lh unity/first/Builds/Android/pupa.apk
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: pupa-apk
